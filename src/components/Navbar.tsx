@@ -33,12 +33,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-lg text-slate-900 tracking-tight">隨行遊俠</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
-                  AI
+                <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+                  彩虹特攻隊行程表
+                </span>
+                <span className="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
+                  即時行程表
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 hidden sm:block">智慧行程導航與穿搭顧問</p>
+              <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-sm">
+                國慶連假宜蘭三奇黃金稻浪・花蓮砂婆噹溪・白鮑溪戲水二日遊
+              </p>
             </div>
           </div>
 

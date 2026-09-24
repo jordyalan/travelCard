@@ -34,8 +34,8 @@ import { AttractionModal } from './components/AttractionModal';
 import { AddItineraryModal } from './components/AddItineraryModal';
 import { SmartImportModal } from './components/SmartImportModal';
 
-const STORAGE_KEY_ITEMS = 'travelmate_itinerary_items_v2';
-const STORAGE_KEY_PLAN = 'travelmate_selected_plan_v2';
+const STORAGE_KEY_ITEMS = 'travelmate_itinerary_items_v3';
+const STORAGE_KEY_PLAN = 'travelmate_selected_plan_v3';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'journey' | 'itinerary' | 'weather' | 'map'>('journey');
