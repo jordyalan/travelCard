@@ -1,0 +1,10 @@
+{
+  "name": "隨行遊俠 TravelMate AI - 行程導航與天氣穿搭顧問",
+  "description": "智慧隨身旅遊管家：輸入行程後即時抓取手機定位，精確顯示下一站行程、景點深度介紹與門票營業資訊，並依即時天氣狀況推薦專屬穿搭指南。",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
