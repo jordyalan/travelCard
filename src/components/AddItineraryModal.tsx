@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, MapPin, Tag, FileText, Compass, Sparkles, Car } from 'lucide-react';
+import { X, MapPin, Tag, FileText, Compass, Sparkles, Car, Calendar } from 'lucide-react';
 import { CategoryType, ItineraryItem } from '../types/itinerary';
 
 interface AddItineraryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (item: Omit<ItineraryItem, 'id' | 'completed' | 'distanceMeters'>) => void;
+  defaultDate?: string;
   referenceLat?: number;
   referenceLng?: number;
 }
@@ -14,11 +15,13 @@ export const AddItineraryModal: React.FC<AddItineraryModalProps> = ({
   isOpen,
   onClose,
   onAdd,
+  defaultDate,
   referenceLat = 35.7148,
   referenceLng = 139.7967,
 }) => {
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
+  const [date, setDate] = useState(defaultDate || new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState<CategoryType>('scenic');
   const [notes, setNotes] = useState('');
   const [lat, setLat] = useState<number>(referenceLat);
@@ -35,6 +38,7 @@ export const AddItineraryModal: React.FC<AddItineraryModalProps> = ({
       location: location.trim() || title.trim(),
       lat: lat || referenceLat,
       lng: lng || referenceLng,
+      date,
       category,
       notes: notes.trim(),
     });
@@ -88,6 +92,21 @@ export const AddItineraryModal: React.FC<AddItineraryModalProps> = ({
               placeholder="例如：清水寺、晴空塔、鼎泰豐"
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none text-slate-900 font-medium"
             />
+          </div>
+
+          {/* Date */}
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">造訪日期</label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+              <input
+                type="date"
+                required
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200 outline-none text-slate-900 font-medium"
+              />
+            </div>
           </div>
 
           {/* Location */}

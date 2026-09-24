@@ -16,11 +16,13 @@ import {
 } from 'lucide-react';
 import { ItineraryItem, UserLocation } from '../types/itinerary';
 import { formatDistance } from '../utils/geoUtils';
+import { formatDateDisplay } from '../utils/dateUtils';
 
 interface ItineraryListProps {
   items: ItineraryItem[];
   nextStopId: string | null;
   userLocation: UserLocation | null;
+  selectedDate?: string;
   onOpenGuide: (item: ItineraryItem) => void;
   onToggleComplete: (id: string) => void;
   onDeleteItem: (id: string) => void;
@@ -45,6 +47,7 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
   items,
   nextStopId,
   userLocation,
+  selectedDate,
   onOpenGuide,
   onToggleComplete,
   onDeleteItem,
@@ -54,6 +57,8 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
   onSelectDemoPlan,
   selectedPlanId,
 }) => {
+  const dateInfo = selectedDate ? formatDateDisplay(selectedDate) : null;
+
   return (
     <div className="space-y-6">
       {/* Top Header & Demo Plan Switcher */}
@@ -62,8 +67,13 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
           <div className="flex items-center gap-2 mb-1">
             <span className="w-2.5 h-2.5 rounded-full bg-orange-500" />
             <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
-              當日完整行程規劃
+              {dateInfo ? `${dateInfo.short} 行程規劃` : '當日完整行程規劃'}
             </h3>
+            {dateInfo && (
+              <span className="text-[11px] bg-orange-100 text-orange-800 font-bold px-2 py-0.5 rounded-md">
+                {dateInfo.relative}
+              </span>
+            )}
             <span className="text-xs bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md">
               共 {items.length} 站
             </span>
@@ -80,8 +90,9 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
             onChange={(e) => onSelectDemoPlan(e.target.value)}
             className="text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 outline-none cursor-pointer"
           >
-            <option value="tokyo-classic">🇯🇵 東京經典一日遊</option>
+            <option value="yilan-hualien">🇹🇼 國慶宜花黃金稻浪戲水二日遊</option>
             <option value="taipei-cultural">🇹🇼 台北文青散策一日遊</option>
+            <option value="tokyo-classic">🇯🇵 東京經典一日遊</option>
             <option value="kyoto-heritage">🇯🇵 京都古都世界遺產</option>
             <option value="custom">✍️ 我的自訂行程</option>
           </select>

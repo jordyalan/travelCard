@@ -18,12 +18,14 @@ import {
   Info,
 } from 'lucide-react';
 import { ItineraryItem, UserLocation, WeatherData } from './types/itinerary';
-import { DEMO_ITINERARIES } from './data/demoItineraries';
+import { DEMO_ITINERARIES, getCuratedDemoPlans } from './data/demoItineraries';
 import { calculateDistanceMeters, formatDistance, computeDynamicSchedule } from './utils/geoUtils';
+import { getTodayDateString } from './utils/dateUtils';
 import { fetchWeather } from './services/weatherService';
 
 import { Navbar } from './components/Navbar';
 import { GpsStatusBanner } from './components/GpsStatusBanner';
+import { DateSwitcherBar } from './components/DateSwitcherBar';
 import { NextStopCard } from './components/NextStopCard';
 import { ItineraryList } from './components/ItineraryList';
 import { WeatherOutfitCard } from './components/WeatherOutfitCard';
@@ -38,20 +40,34 @@ const STORAGE_KEY_PLAN = 'travelmate_selected_plan_v2';
 export default function App() {
   const [activeTab, setActiveTab] = useState<'journey' | 'itinerary' | 'weather' | 'map'>('journey');
   const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_KEY_PLAN) || 'tokyo-classic';
+    return localStorage.getItem(STORAGE_KEY_PLAN) || 'yilan-hualien';
   });
 
   const [items, setItems] = useState<ItineraryItem[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEY_ITEMS);
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // If already saved with Yilan/Hualien items or custom, keep them
+          return parsed;
+        }
       } catch (e) {
         console.error('Failed to parse saved itinerary', e);
       }
     }
-    const defaultPlan = DEMO_ITINERARIES.find((p) => p.id === 'tokyo-classic') || DEMO_ITINERARIES[0];
+    const freshPlans = getCuratedDemoPlans();
+    const defaultPlan = freshPlans.find((p) => p.id === 'yilan-hualien') || freshPlans[0];
     return defaultPlan.items;
+  });
+
+  // Automatically detect user's current date and set as active itinerary date
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const today = getTodayDateString();
+    const freshPlans = getCuratedDemoPlans();
+    const defaultPlan = freshPlans.find((p) => p.id === 'yilan-hualien') || freshPlans[0];
+    const hasToday = defaultPlan.items.some((i) => i.date === today);
+    return hasToday ? today : (defaultPlan.initialDate || today);
   });
 
   // User location state
@@ -193,13 +209,39 @@ export default function App() {
     }
   }, [userLocation?.lat, userLocation?.lng, items]);
 
-  // Automatically compute dynamic schedule (driving time, estimated arrival time) from GPS
-  const itemsWithDistance = useMemo(() => {
-    if (!userLocation) return items;
-    return computeDynamicSchedule(items, userLocation.lat, userLocation.lng, currentTime);
-  }, [items, userLocation, currentTime]);
+  // List of all unique dates present in the current itinerary plus today
+  const availableDates = useMemo(() => {
+    const dates = new Set<string>();
+    const today = getTodayDateString();
+    dates.add(today);
+    items.forEach((item) => {
+      if (item.date) dates.add(item.date);
+    });
+    return Array.from(dates).sort();
+  }, [items]);
 
-  // Identify next stop (the first uncompleted stop)
+  // Fast switch to today's date
+  const handleJumpToToday = useCallback(() => {
+    const today = getTodayDateString();
+    setSelectedDate(today);
+  }, []);
+
+  // Filter items for the currently active date
+  const dayItems = useMemo(() => {
+    const today = getTodayDateString();
+    return items.filter((item) => {
+      if (!item.date) return selectedDate === today;
+      return item.date === selectedDate;
+    });
+  }, [items, selectedDate]);
+
+  // Automatically compute dynamic schedule (driving time, estimated arrival time) from GPS for active date
+  const itemsWithDistance = useMemo(() => {
+    if (!userLocation) return dayItems;
+    return computeDynamicSchedule(dayItems, userLocation.lat, userLocation.lng, currentTime);
+  }, [dayItems, userLocation, currentTime]);
+
+  // Identify next stop (the first uncompleted stop for current date)
   const nextStop = useMemo(() => {
     return itemsWithDistance.find((item) => !item.completed) || null;
   }, [itemsWithDistance]);
@@ -232,14 +274,20 @@ export default function App() {
   };
 
   const handleMoveItem = (index: number, direction: 'up' | 'down') => {
+    const targetDayIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetDayIndex < 0 || targetDayIndex >= dayItems.length) return;
+
+    const currentItem = dayItems[index];
+    const targetItem = dayItems[targetDayIndex];
+
     setItems((prev) => {
-      const newItems = [...prev];
-      const targetIndex = direction === 'up' ? index - 1 : index + 1;
-      if (targetIndex < 0 || targetIndex >= newItems.length) return prev;
-      const temp = newItems[index];
-      newItems[index] = newItems[targetIndex];
-      newItems[targetIndex] = temp;
-      return newItems;
+      const idx1 = prev.findIndex((i) => i.id === currentItem.id);
+      const idx2 = prev.findIndex((i) => i.id === targetItem.id);
+      if (idx1 === -1 || idx2 === -1) return prev;
+      const copy = [...prev];
+      copy[idx1] = targetItem;
+      copy[idx2] = currentItem;
+      return copy;
     });
   };
 
@@ -249,19 +297,24 @@ export default function App() {
     const item: ItineraryItem = {
       ...newItem,
       id: `custom-item-${Date.now()}`,
+      date: newItem.date || selectedDate,
       completed: false,
     };
     setItems((prev) => [...prev, item]);
   };
 
   const handleSmartImport = (importedItems: ItineraryItem[], title?: string) => {
-    setItems(importedItems);
+    const tagged = importedItems.map((item) => ({
+      ...item,
+      date: item.date || selectedDate,
+    }));
+    setItems((prev) => [...prev, ...tagged]);
     setSelectedPlanId('custom');
-    if (importedItems.length > 0) {
+    if (tagged.length > 0) {
       // Auto move simulated location near first spot to see distance
       setUserLocation({
-        lat: importedItems[0].lat - 0.003,
-        lng: importedItems[0].lng - 0.002,
+        lat: tagged[0].lat - 0.003,
+        lng: tagged[0].lng - 0.002,
         accuracy: 10,
         timestamp: Date.now(),
         isSimulated: true,
@@ -272,9 +325,13 @@ export default function App() {
 
   const handleSelectDemoPlan = (planId: string) => {
     setSelectedPlanId(planId);
-    const plan = DEMO_ITINERARIES.find((p) => p.id === planId);
+    const plans = getCuratedDemoPlans();
+    const plan = plans.find((p) => p.id === planId);
     if (plan) {
       setItems(plan.items);
+      const today = getTodayDateString();
+      const hasToday = plan.items.some((i) => i.date === today);
+      setSelectedDate(hasToday ? today : (plan.initialDate || today));
       setUserLocation({
         lat: plan.defaultLat,
         lng: plan.defaultLng,
@@ -339,6 +396,15 @@ export default function App() {
           onSimulateNearNextStop={handleSimulateNearNextStop}
           onSwitchToRealGps={fetchRealGps}
           nextStopTitle={nextStop?.title}
+        />
+
+        {/* Date Auto-Detection & Switcher Bar */}
+        <DateSwitcherBar
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          availableDates={availableDates}
+          totalStopsOnSelectedDate={dayItems.length}
+          onJumpToToday={handleJumpToToday}
         />
 
         {/* Tab 1: Live Journey (即時導覽 & 下一個行程) */}
@@ -492,6 +558,7 @@ export default function App() {
             items={itemsWithDistance}
             nextStopId={nextStop?.id || null}
             userLocation={userLocation}
+            selectedDate={selectedDate}
             onOpenGuide={(item) => setSelectedAttraction(item)}
             onToggleComplete={handleToggleComplete}
             onDeleteItem={handleDeleteItem}
@@ -558,6 +625,7 @@ export default function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddItem}
+        defaultDate={selectedDate}
         referenceLat={userLocation?.lat}
         referenceLng={userLocation?.lng}
       />
@@ -567,6 +635,7 @@ export default function App() {
         isOpen={isSmartImportOpen}
         onClose={() => setIsSmartImportOpen(false)}
         onImport={handleSmartImport}
+        defaultDate={selectedDate}
       />
     </div>
   );

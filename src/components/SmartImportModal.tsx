@@ -7,6 +7,7 @@ interface SmartImportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onImport: (items: ItineraryItem[], title?: string) => void;
+  defaultDate?: string;
 }
 
 const SAMPLE_TEXT = `早上9點先去淺草寺雷門拍照參觀，11點走到晴空塔350m展望台看風景，中午在晴空塔吃敘敘苑燒肉。
@@ -16,6 +17,7 @@ export const SmartImportModal: React.FC<SmartImportModalProps> = ({
   isOpen,
   onClose,
   onImport,
+  defaultDate,
 }) => {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,7 @@ export const SmartImportModal: React.FC<SmartImportModalProps> = ({
           location: item.location || item.title,
           lat: item.lat || 25.0330,
           lng: item.lng || 121.5654,
+          date: item.date || defaultDate || new Date().toISOString().slice(0, 10),
           category: item.category || 'scenic',
           notes: item.notes || '',
           completed: false,
