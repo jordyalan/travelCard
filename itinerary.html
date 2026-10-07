@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan Trip Itinerary (11/06 - 11/09)</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --flight-bg: #eff6ff;
+      --flight-border: #bfdbfe;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .day-column {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .day-header {
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding-bottom: 0.75rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .day-header span.date {
+      color: var(--primary);
+    }
+
+    .item-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .item-card {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    .item-card.flight {
+      background: var(--flight-bg);
+      border-color: var(--flight-border);
+    }
+
+    .item-card a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .item-card a:hover {
+      text-decoration: underline;
+      color: var(--primary-hover);
+    }
+
+    .item-card .sub-items {
+      margin-top: 0.5rem;
+      padding-left: 1rem;
+      list-style-type: disc;
+    }
+
+    .item-card .sub-items li {
+      margin-bottom: 0.25rem;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      margin-bottom: 0.25rem;
+    }
+
+    .tag-flight {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .tag-stay {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Taiwan Trip Itinerary</h1>
+      <p>November 6 – November 9</p>
+    </header>
+
+    <main class="grid">
+      <!-- 11/06 FRI -->
+      <section class="day-column">
+        <div class="day-header">
+          <span class="date">11/06</span>
+          <span>Friday</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-card flight">
+            <span class="tag tag-flight">Flight</span>
+            <div><strong>EVA Air BR206</strong></div>
+            <div class="meta">Suvarnabhumi: 02:15 AM</div>
+            <div class="meta">Taipei (TPE) T2: 06:50 PM</div>
+          </li>
+          <li class="item-card">
+            <div>Luggage Drop-off</div>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/eQM7cWkCM5bDF34s9" target="_blank" rel="noopener noreferrer">Mystery Coast (神秘海岸)</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/LQN4PdyTht77JJQx5" target="_blank" rel="noopener noreferrer">Governor General Hot Spring (金山總督溫泉)</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/rVrD8nJNZ5CPJgMg8" target="_blank" rel="noopener noreferrer">Fundoshi Night @ Hunt Taipei (六尺夜)</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 11/07 SAT -->
+      <section class="day-column">
+        <div class="day-header">
+          <span class="date">11/07</span>
+          <span>Saturday</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/Ved8wufG22SvmP687" target="_blank" rel="noopener noreferrer">FOOTD STORE Wanhua (富特士多早餐店)</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/Kp9XC9iFa1PVFgM39" target="_blank" rel="noopener noreferrer">Ruifang Station</a>
+          </li>
+          <li class="item-card">
+            <div><strong>Day Excursions:</strong></div>
+            <ul class="sub-items">
+              <li><a href="https://maps.app.goo.gl/9sD3JT4GvL3WThKTA" target="_blank" rel="noopener noreferrer">Shuinandong Smelter Remains / 13 Levels</a></li>
+              <li><a href="https://maps.app.goo.gl/KMeTFrAKSvzyV6ae9" target="_blank" rel="noopener noreferrer">Golden Waterfall</a></li>
+              <li><a href="https://maps.app.goo.gl/zjNqSerEXxMSLayh7" target="_blank" rel="noopener noreferrer">New Taipei City Gold Museum</a></li>
+              <li><a href="https://maps.app.goo.gl/roq76nPwhb6CXtVn7" target="_blank" rel="noopener noreferrer">Buyan Pavilion (不厭亭)</a></li>
+            </ul>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/ACZZSnTvmSoeMCqB9" target="_blank" rel="noopener noreferrer">Jiufen Old Street (九份)</a>
+          </li>
+          <li class="item-card">
+            <span class="tag tag-stay">Accommodation</span>
+            <div><a href="https://maps.app.goo.gl/QUMMhHUzrAj8FgdT8" target="_blank" rel="noopener noreferrer">Hotel in Jiufen</a></div>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 11/08 SUN -->
+      <section class="day-column">
+        <div class="day-header">
+          <span class="date">11/08</span>
+          <span>Sunday</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-card">
+            <div>Ruifang Scooter Return</div>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/3k37UNY4MjbUn1FSA" target="_blank" rel="noopener noreferrer">Toucheng (頭城)</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/u34u1hybAEafwtKcA" target="_blank" rel="noopener noreferrer">Jiaoxi Hot Spring Park</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/rxpESDBA2KhdPvVv9" target="_blank" rel="noopener noreferrer">HueAn Park</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/91xejSYUwyipPNZv6" target="_blank" rel="noopener noreferrer">Ximen Bar</a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- 11/09 MON -->
+      <section class="day-column">
+        <div class="day-header">
+          <span class="date">11/09</span>
+          <span>Monday</span>
+        </div>
+        <ul class="item-list">
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/1S3fGy1wf9RWiYfW8" target="_blank" rel="noopener noreferrer">Huazui Kitchen</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/3mTuVyDuV7Vpiw5p9" target="_blank" rel="noopener noreferrer">0km山物所</a>
+          </li>
+          <li class="item-card">
+            <a href="https://maps.app.goo.gl/mGBALTQefyCmxMAX8" target="_blank" rel="noopener noreferrer">Xpark Aquarium</a>
+          </li>
+          <li class="item-card">
+            <a href="https://www.gloriaoutlets.com/eng/?s" target="_blank" rel="noopener noreferrer">GLORIA OUTLET</a>
+          </li>
+          <li class="item-card flight">
+            <span class="tag tag-flight">Flight</span>
+            <div><strong>EVA Air BR601</strong></div>
+            <div class="meta">Taipei (TPE) T2: 22:30 PM</div>
+            <div class="meta">Suvarnabhumi: 01:25 AM</div>
+          </li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
