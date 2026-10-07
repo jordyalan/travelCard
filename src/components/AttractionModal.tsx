@@ -15,6 +15,8 @@ import {
   Share2,
   Loader2,
   Car,
+  Undo2,
+  ArrowRight,
 } from 'lucide-react';
 import { AttractionGuide, ItineraryItem } from '../types/itinerary';
 import { fetchAttractionGuide } from '../services/apiService';
@@ -22,9 +24,24 @@ import { fetchAttractionGuide } from '../services/apiService';
 interface AttractionModalProps {
   item: ItineraryItem | null;
   onClose: () => void;
+  onPrevious?: () => void;
+  onNext?: () => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+  previousTitle?: string;
+  nextTitle?: string;
 }
 
-export const AttractionModal: React.FC<AttractionModalProps> = ({ item, onClose }) => {
+export const AttractionModal: React.FC<AttractionModalProps> = ({
+  item,
+  onClose,
+  onPrevious,
+  onNext,
+  hasPrevious,
+  hasNext,
+  previousTitle,
+  nextTitle,
+}) => {
   const [guide, setGuide] = useState<AttractionGuide | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -288,22 +305,54 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({ item, onClose 
         </div>
 
         {/* Modal Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
-          <button
-            onClick={handleCopyShare}
-            className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 py-2 px-3 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
-            <span>{copied ? '已複製景點資訊' : '複製分享'}</span>
-          </button>
+        <div className="px-5 sm:px-6 py-4 border-t border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {/* 回到上一個景點 */}
+            {onPrevious && (
+              <button
+                onClick={onPrevious}
+                disabled={!hasPrevious}
+                className="flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-xl transition-all cursor-pointer bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                title={hasPrevious ? `回到上一個景點：${previousTitle}` : '已是第一個景點（起點）'}
+              >
+                <Undo2 className="w-3.5 h-3.5 text-amber-700" />
+                <span>回到上一個景點</span>
+                {previousTitle && (
+                  <span className="hidden sm:inline font-normal text-[11px] text-amber-800/80 truncate max-w-[120px]">
+                    ({previousTitle})
+                  </span>
+                )}
+              </button>
+            )}
+
+            {/* 下一個景點 */}
+            {onNext && hasNext && (
+              <button
+                onClick={onNext}
+                className="flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-xl transition-all cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
+                title={`前往下一個景點：${nextTitle}`}
+              >
+                <span>下一景點</span>
+                <ArrowRight className="w-3.5 h-3.5 text-slate-500" />
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleCopyShare}
+              className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 py-2 px-3 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
+            >
+              {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+              <span className="hidden sm:inline">{copied ? '已複製' : '分享'}</span>
+            </button>
+
             <button
               onClick={handleOpenNavigation}
               className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer"
             >
               <Navigation className="w-3.5 h-3.5" />
-              <span>導航前往景點</span>
+              <span>導航前往</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>

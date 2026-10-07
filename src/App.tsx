@@ -16,6 +16,7 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
+  Undo2,
 } from 'lucide-react';
 import { ItineraryItem, UserLocation, WeatherData } from './types/itinerary';
 import { DEMO_ITINERARIES, getCuratedDemoPlans } from './data/demoItineraries';
@@ -92,6 +93,10 @@ export default function App() {
   const [selectedAttraction, setSelectedAttraction] = useState<ItineraryItem | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [isSmartImportOpen, setIsSmartImportOpen] = useState<boolean>(false);
+
+  // Interaction feedback states
+  const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Persist items to local storage
   useEffect(() => {
@@ -256,6 +261,19 @@ export default function App() {
     return null;
   }, [itemsWithDistance, nextStop]);
 
+  // Identify previous stop (the stop right before nextStop, or the last completed stop)
+  const previousStop = useMemo(() => {
+    if (!nextStop) {
+      const completed = itemsWithDistance.filter((item) => item.completed);
+      return completed.length > 0 ? completed[completed.length - 1] : null;
+    }
+    const nextIndex = itemsWithDistance.findIndex((item) => item.id === nextStop.id);
+    if (nextIndex > 0) {
+      return itemsWithDistance[nextIndex - 1];
+    }
+    return null;
+  }, [itemsWithDistance, nextStop]);
+
   // Handlers
   const handleMarkComplete = (id: string) => {
     setItems((prev) =>
@@ -267,6 +285,60 @@ export default function App() {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, completed: !item.completed } : item))
     );
+  };
+
+  // Return to previous attraction from itinerary item
+  const handleBackToPreviousSpot = (index: number) => {
+    if (index <= 0 || index >= dayItems.length) return;
+    const prevItem = dayItems[index - 1];
+
+    // If previous item was marked completed, mark it active (uncompleted)
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === prevItem.id) {
+          return { ...item, completed: false };
+        }
+        return item;
+      })
+    );
+
+    setHighlightedItemId(prevItem.id);
+    setToastMessage(`📍 已回到上一個景點：【${prevItem.title}】`);
+    setTimeout(() => setHighlightedItemId(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
+
+    setTimeout(() => {
+      const el = document.getElementById(`itinerary-item-${prevItem.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
+  };
+
+  // Return to previous attraction from NextStopCard
+  const handleBackToPreviousFromCard = () => {
+    if (!previousStop) return;
+
+    setItems((prev) =>
+      prev.map((item) => {
+        if (item.id === previousStop.id) {
+          return { ...item, completed: false };
+        }
+        return item;
+      })
+    );
+
+    setHighlightedItemId(previousStop.id);
+    setToastMessage(`📍 已回到上一個景點：【${previousStop.title}】`);
+    setTimeout(() => setHighlightedItemId(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
+
+    setTimeout(() => {
+      const el = document.getElementById(`itinerary-item-${previousStop.id}`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
   const handleDeleteItem = (id: string) => {
@@ -414,10 +486,12 @@ export default function App() {
             <NextStopCard
               nextStop={nextStop}
               followingStop={followingStop}
+              previousStop={previousStop}
               userLocation={userLocation}
               onOpenGuide={(item) => setSelectedAttraction(item)}
               onMarkComplete={handleMarkComplete}
               onPlayQuickAudio={(item) => setSelectedAttraction(item)}
+              onBackToPrevious={handleBackToPreviousFromCard}
             />
 
             {/* Quick Two-Column View: Weather Snippet & Mini Route Map */}
@@ -567,6 +641,8 @@ export default function App() {
             onOpenSmartImport={() => setIsSmartImportOpen(true)}
             onSelectDemoPlan={handleSelectDemoPlan}
             selectedPlanId={selectedPlanId}
+            onBackToPreviousSpot={handleBackToPreviousSpot}
+            highlightedItemId={highlightedItemId}
           />
         )}
 
@@ -615,10 +691,28 @@ export default function App() {
       </main>
 
       {/* Attraction Detail Guide Modal */}
-      <AttractionModal
-        item={selectedAttraction}
-        onClose={() => setSelectedAttraction(null)}
-      />
+      {(() => {
+        const modalIndex = selectedAttraction
+          ? itemsWithDistance.findIndex((i) => i.id === selectedAttraction.id)
+          : -1;
+        const hasPrev = modalIndex > 0;
+        const hasNext = modalIndex >= 0 && modalIndex < itemsWithDistance.length - 1;
+        const prevSpot = hasPrev ? itemsWithDistance[modalIndex - 1] : null;
+        const nextSpotItem = hasNext ? itemsWithDistance[modalIndex + 1] : null;
+
+        return (
+          <AttractionModal
+            item={selectedAttraction}
+            onClose={() => setSelectedAttraction(null)}
+            onPrevious={() => prevSpot && setSelectedAttraction(prevSpot)}
+            onNext={() => nextSpotItem && setSelectedAttraction(nextSpotItem)}
+            hasPrevious={hasPrev}
+            hasNext={hasNext}
+            previousTitle={prevSpot?.title}
+            nextTitle={nextSpotItem?.title}
+          />
+        );
+      })()}
 
       {/* Manual Add Item Modal */}
       <AddItineraryModal
@@ -637,6 +731,14 @@ export default function App() {
         onImport={handleSmartImport}
         defaultDate={selectedDate}
       />
+
+      {/* Floating Feedback Toast */}
+      {toastMessage && (
+        <div className="fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 text-white backdrop-blur-md px-5 py-3 rounded-2xl shadow-2xl border border-slate-700/80 flex items-center gap-2.5 text-xs sm:text-sm font-bold animate-bounce-subtle">
+          <Undo2 className="w-4 h-4 text-amber-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
     </div>
   );
 }

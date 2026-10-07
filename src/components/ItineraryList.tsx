@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   MapPin,
   Clock,
@@ -13,6 +13,7 @@ import {
   Plus,
   Compass,
   Car,
+  Undo2,
 } from 'lucide-react';
 import { ItineraryItem, UserLocation } from '../types/itinerary';
 import { formatDistance } from '../utils/geoUtils';
@@ -31,6 +32,8 @@ interface ItineraryListProps {
   onOpenSmartImport: () => void;
   onSelectDemoPlan: (planId: string) => void;
   selectedPlanId: string;
+  onBackToPreviousSpot?: (index: number) => void;
+  highlightedItemId?: string | null;
 }
 
 const CATEGORY_TAGS: Record<string, { label: string; color: string }> = {
@@ -56,6 +59,8 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
   onOpenSmartImport,
   onSelectDemoPlan,
   selectedPlanId,
+  onBackToPreviousSpot,
+  highlightedItemId,
 }) => {
   const dateInfo = selectedDate ? formatDateDisplay(selectedDate) : null;
 
@@ -143,13 +148,18 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
           {items.map((item, index) => {
             const isNext = item.id === nextStopId;
             const isCompleted = !!item.completed;
+            const isHighlighted = item.id === highlightedItemId;
             const tag = CATEGORY_TAGS[item.category] || CATEGORY_TAGS.other;
+            const prevItem = index > 0 ? items[index - 1] : null;
 
             return (
               <div
                 key={item.id}
-                className={`relative flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-3xl transition-all ${
-                  isNext
+                id={`itinerary-item-${item.id}`}
+                className={`relative flex items-start gap-3 sm:gap-4 p-4 sm:p-5 rounded-3xl transition-all duration-300 ${
+                  isHighlighted
+                    ? 'ring-4 ring-amber-400 bg-amber-50/60 shadow-lg shadow-amber-500/20 scale-[1.01]'
+                    : isNext
                     ? 'bg-gradient-to-r from-orange-50/90 via-amber-50/50 to-white border-2 border-orange-400 shadow-md shadow-orange-500/10'
                     : isCompleted
                     ? 'bg-slate-50/80 border border-slate-200 opacity-60'
@@ -242,14 +252,45 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
                   )}
 
                   {/* Item Actions */}
-                  <div className="flex items-center justify-between mt-3.5 pt-2.5 border-t border-slate-100 text-xs">
-                    <button
-                      onClick={() => onOpenGuide(item)}
-                      className="flex items-center gap-1.5 font-bold text-orange-600 hover:text-orange-700 transition-colors cursor-pointer"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>景點導覽介紹</span>
-                    </button>
+                  <div className="flex flex-wrap items-center justify-between gap-2.5 mt-3.5 pt-2.5 border-t border-slate-100 text-xs">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* 回到上一個景點按鈕 */}
+                      <button
+                        onClick={() => {
+                          if (onBackToPreviousSpot) {
+                            onBackToPreviousSpot(index);
+                          }
+                        }}
+                        disabled={index === 0}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
+                          index === 0
+                            ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50'
+                            : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300/80 active:scale-95 shadow-xs'
+                        }`}
+                        title={
+                          index === 0
+                            ? '目前已是當日第一個景點（起點）'
+                            : `回到上一個景點：${prevItem?.title}`
+                        }
+                      >
+                        <Undo2 className="w-3.5 h-3.5 text-amber-700 shrink-0" />
+                        <span>回到上一個景點</span>
+                        {prevItem && (
+                          <span className="hidden sm:inline font-normal text-[11px] text-amber-800/80 truncate max-w-[130px]">
+                            ({prevItem.title})
+                          </span>
+                        )}
+                      </button>
+
+                      {/* 景點導覽介紹 */}
+                      <button
+                        onClick={() => onOpenGuide(item)}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 font-bold text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded-xl transition-colors cursor-pointer"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>景點導覽介紹</span>
+                      </button>
+                    </div>
 
                     <div className="flex items-center gap-1">
                       {/* Move Up */}

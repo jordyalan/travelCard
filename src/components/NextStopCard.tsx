@@ -11,6 +11,7 @@ import {
   Car,
   ExternalLink,
   Compass,
+  Undo2,
 } from 'lucide-react';
 import { ItineraryItem, UserLocation } from '../types/itinerary';
 import { formatDistance } from '../utils/geoUtils';
@@ -18,11 +19,13 @@ import { formatDistance } from '../utils/geoUtils';
 interface NextStopCardProps {
   nextStop: ItineraryItem | null;
   followingStop: ItineraryItem | null;
+  previousStop?: ItineraryItem | null;
   userLocation: UserLocation | null;
   onOpenGuide: (item: ItineraryItem) => void;
   onMarkComplete: (id: string) => void;
   onPlayQuickAudio: (item: ItineraryItem) => void;
   isAudioPlaying?: boolean;
+  onBackToPrevious?: () => void;
 }
 
 const CATEGORY_STYLES: Record<string, { label: string; bg: string; text: string; border: string }> = {
@@ -38,11 +41,13 @@ const CATEGORY_STYLES: Record<string, { label: string; bg: string; text: string;
 export const NextStopCard: React.FC<NextStopCardProps> = ({
   nextStop,
   followingStop,
+  previousStop,
   userLocation,
   onOpenGuide,
   onMarkComplete,
   onPlayQuickAudio,
   isAudioPlaying,
+  onBackToPrevious,
 }) => {
   if (!nextStop) {
     return (
@@ -52,8 +57,17 @@ export const NextStopCard: React.FC<NextStopCardProps> = ({
         </div>
         <h3 className="text-xl font-extrabold text-slate-900 mb-2">🎉 今日行程全部完成！</h3>
         <p className="text-sm text-slate-600 max-w-md mx-auto mb-6">
-          您已順利走訪今日所有的精采景點。辛苦了！好好享受休息時間，或點擊上方「新增景點」繼續下一段旅程。
+          您已順利走訪今日所有的精采景點。辛苦了！好好享受休息時間，或點擊下方按鈕重溫上一站。
         </p>
+        {onBackToPrevious && previousStop && (
+          <button
+            onClick={onBackToPrevious}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-800 rounded-xl font-bold text-xs shadow-xs transition-all cursor-pointer"
+          >
+            <Undo2 className="w-4 h-4 text-emerald-600" />
+            <span>回到上一個景點：{previousStop.title}</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -169,7 +183,19 @@ export const NextStopCard: React.FC<NextStopCardProps> = ({
         )}
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <div className={`grid grid-cols-1 gap-2.5 ${previousStop && onBackToPrevious ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-3'}`}>
+          {/* 0. Back to previous spot if available */}
+          {previousStop && onBackToPrevious && (
+            <button
+              onClick={onBackToPrevious}
+              className="flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs sm:text-sm border border-amber-300 shadow-xs transition-all cursor-pointer"
+              title={`回到上一個景點：${previousStop.title}`}
+            >
+              <Undo2 className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>回到上一個景點</span>
+            </button>
+          )}
+
           {/* 1. View Attraction Guide */}
           <button
             onClick={() => onOpenGuide(nextStop)}
@@ -185,7 +211,7 @@ export const NextStopCard: React.FC<NextStopCardProps> = ({
             className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold text-sm border border-slate-200 shadow-xs transition-all cursor-pointer"
           >
             <Navigation className="w-4 h-4 text-sky-600" />
-            <span>行車導航 (Google Maps)</span>
+            <span>行車導航</span>
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
           </button>
 
