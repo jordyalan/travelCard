@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { AttractionGuide, ItineraryItem } from '../types/itinerary';
 import { fetchAttractionGuide } from '../services/apiService';
+import { getCuratedOrGeneratedGuide } from '../data/curatedAttractionGuides';
 
 interface AttractionModalProps {
   item: ItineraryItem | null;
@@ -57,7 +58,7 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
     setIsPlayingAudio(false);
     window.speechSynthesis?.cancel();
 
-    fetchAttractionGuide(item.title, item.location)
+    fetchAttractionGuide(item.title, item.location, item.notes)
       .then((data) => {
         if (isMounted) {
           setGuide(data);
@@ -66,7 +67,9 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
       })
       .catch((err) => {
         if (isMounted) {
-          setError(err.message || '景點介紹讀取失敗');
+          console.warn('Attraction guide error, falling back to curated guide:', err);
+          const fallback = getCuratedOrGeneratedGuide(item.title, item.location, item.notes);
+          setGuide(fallback);
           setLoading(false);
         }
       });
