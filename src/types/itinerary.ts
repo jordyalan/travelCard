@@ -45,7 +45,8 @@ export interface AttractionGuide {
   photoSpots: string[];
   nearbyFood: string[];
   tips: string[];
-  audioGuide: string;
+  audioGuide?: string;
+  soundscapeType?: string;
 }
 
 export interface WeatherData {

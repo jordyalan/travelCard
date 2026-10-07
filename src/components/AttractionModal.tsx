@@ -17,10 +17,14 @@ import {
   Car,
   Undo2,
   ArrowRight,
+  Play,
+  Pause,
+  Headphones,
 } from 'lucide-react';
 import { AttractionGuide, ItineraryItem } from '../types/itinerary';
 import { fetchAttractionGuide } from '../services/apiService';
 import { getCuratedOrGeneratedGuide } from '../data/curatedAttractionGuides';
+import { soundscapeEngine, getSoundscapeMeta } from '../services/soundscapeService';
 
 interface AttractionModalProps {
   item: ItineraryItem | null;
@@ -46,8 +50,12 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
   const [guide, setGuide] = useState<AttractionGuide | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const [isPlayingSoundscape, setIsPlayingSoundscape] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(0.7);
   const [copied, setCopied] = useState<boolean>(false);
+
+  // 取得該景點特色情境音效配置
+  const soundscapeMeta = item ? getSoundscapeMeta(item.title, item.notes) : null;
 
   useEffect(() => {
     if (!item) return;
@@ -55,8 +63,8 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
     let isMounted = true;
     setLoading(true);
     setError(null);
-    setIsPlayingAudio(false);
-    window.speechSynthesis?.cancel();
+    soundscapeEngine.stop();
+    setIsPlayingSoundscape(false);
 
     fetchAttractionGuide(item.title, item.location, item.notes)
       .then((data) => {
@@ -76,29 +84,32 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
 
     return () => {
       isMounted = false;
-      window.speechSynthesis?.cancel();
+      soundscapeEngine.stop();
+      setIsPlayingSoundscape(false);
     };
   }, [item]);
 
-  const handleToggleSpeech = () => {
-    if (!guide?.audioGuide && !guide?.summary) return;
+  const handleToggleSoundscape = () => {
+    if (!soundscapeMeta) return;
 
-    if (isPlayingAudio) {
-      window.speechSynthesis?.cancel();
-      setIsPlayingAudio(false);
+    if (isPlayingSoundscape) {
+      soundscapeEngine.stop();
+      setIsPlayingSoundscape(false);
     } else {
-      window.speechSynthesis?.cancel();
-      const textToSpeak = guide.audioGuide || guide.summary;
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
-      utterance.lang = 'zh-TW';
-      utterance.rate = 0.95;
-
-      utterance.onend = () => setIsPlayingAudio(false);
-      utterance.onerror = () => setIsPlayingAudio(false);
-
-      window.speechSynthesis?.speak(utterance);
-      setIsPlayingAudio(true);
+      soundscapeEngine.play(soundscapeMeta.type, volume);
+      setIsPlayingSoundscape(true);
     }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    soundscapeEngine.setVolume(newVol);
+  };
+
+  const handleModalClose = () => {
+    soundscapeEngine.stop();
+    setIsPlayingSoundscape(false);
+    onClose();
   };
 
   const handleCopyShare = () => {
@@ -139,7 +150,7 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
           </div>
 
           <button
-            onClick={onClose}
+            onClick={handleModalClose}
             className="absolute top-5 right-5 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
@@ -163,29 +174,93 @@ export const AttractionModal: React.FC<AttractionModalProps> = ({
             </div>
           ) : guide ? (
             <>
-              {/* Audio Guide Player Banner */}
-              <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 rounded-2xl p-4 text-white shadow-md shadow-orange-500/10 flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shrink-0">
-                    <Volume2 className={`w-5 h-5 ${isPlayingAudio ? 'animate-bounce' : ''}`} />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold tracking-wide uppercase text-amber-100">
-                      AI 隨身語音導遊
-                    </h4>
-                    <p className="text-xs text-white/90 line-clamp-1">
-                      {isPlayingAudio ? '正在播放專屬語音解說...' : '一鍵聆聽景點精彩歷史與秘密故事'}
-                    </p>
+              {/* 景點特色情境音效 / 沉浸聲景 Banner */}
+              {soundscapeMeta && (
+                <div className="relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-4 sm:p-5 text-white shadow-xl border border-slate-800">
+                  <div className="absolute -top-12 -right-12 w-36 h-36 bg-orange-500/20 rounded-full blur-2xl pointer-events-none" />
+
+                  <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-start sm:items-center gap-3.5">
+                      <div
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-md transition-all ${
+                          isPlayingSoundscape
+                            ? 'bg-gradient-to-tr from-amber-500 to-orange-500 ring-4 ring-orange-500/30 scale-105 shadow-orange-500/30'
+                            : 'bg-white/10 text-white border border-white/10'
+                        }`}
+                      >
+                        <span>{soundscapeMeta.emoji}</span>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                            🎧 景點情境音效
+                          </span>
+                          <span className="text-[11px] font-bold text-slate-300">
+                            {soundscapeMeta.badge}
+                          </span>
+                        </div>
+
+                        <h4 className="text-sm sm:text-base font-extrabold text-white tracking-tight flex items-center gap-1.5">
+                          <span>{soundscapeMeta.title}</span>
+                          {isPlayingSoundscape && (
+                            <span className="flex items-center gap-0.5 ml-1">
+                              <span className="w-1 h-3 bg-amber-400 rounded-full animate-pulse" />
+                              <span className="w-1 h-5 bg-amber-400 rounded-full animate-pulse delay-75" />
+                              <span className="w-1 h-2 bg-amber-400 rounded-full animate-pulse delay-150" />
+                            </span>
+                          )}
+                        </h4>
+
+                        <p className="text-xs text-slate-300 mt-0.5 line-clamp-1 sm:line-clamp-none">
+                          {soundscapeMeta.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
+                      {/* 音量調節 */}
+                      {isPlayingSoundscape && (
+                        <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/10">
+                          <Volume2 className="w-3.5 h-3.5 text-slate-300" />
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            value={volume}
+                            onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                            className="w-16 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                            title="調整音效音量"
+                          />
+                        </div>
+                      )}
+
+                      {/* 播放/暫停按鈕 */}
+                      <button
+                        onClick={handleToggleSoundscape}
+                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all cursor-pointer ${
+                          isPlayingSoundscape
+                            ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20 ring-2 ring-rose-400/40'
+                            : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-orange-500/20 hover:scale-105'
+                        }`}
+                      >
+                        {isPlayingSoundscape ? (
+                          <>
+                            <Pause className="w-3.5 h-3.5" />
+                            <span>暫停音效</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            <span>播放情境音效</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-
-                <button
-                  onClick={handleToggleSpeech}
-                  className="px-4 py-2 rounded-xl bg-white text-orange-600 font-bold text-xs shadow-xs hover:bg-orange-50 transition-all cursor-pointer shrink-0"
-                >
-                  {isPlayingAudio ? '暫停播放' : '播放導覽'}
-                </button>
-              </div>
+              )}
 
               {/* Summary */}
               <div>

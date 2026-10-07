@@ -5,7 +5,6 @@ import {
   Navigation,
   CheckCircle2,
   BookOpen,
-  Volume2,
   Sparkles,
   ArrowRight,
   Car,
@@ -23,8 +22,6 @@ interface NextStopCardProps {
   userLocation: UserLocation | null;
   onOpenGuide: (item: ItineraryItem) => void;
   onMarkComplete: (id: string) => void;
-  onPlayQuickAudio: (item: ItineraryItem) => void;
-  isAudioPlaying?: boolean;
   onBackToPrevious?: () => void;
 }
 
@@ -45,8 +42,6 @@ export const NextStopCard: React.FC<NextStopCardProps> = ({
   userLocation,
   onOpenGuide,
   onMarkComplete,
-  onPlayQuickAudio,
-  isAudioPlaying,
   onBackToPrevious,
 }) => {
   if (!nextStop) {

@@ -490,7 +490,6 @@ export default function App() {
               userLocation={userLocation}
               onOpenGuide={(item) => setSelectedAttraction(item)}
               onMarkComplete={handleMarkComplete}
-              onPlayQuickAudio={(item) => setSelectedAttraction(item)}
               onBackToPrevious={handleBackToPreviousFromCard}
             />
 
