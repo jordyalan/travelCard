@@ -93,7 +93,9 @@ export function getSoundscapeMeta(attractionName: string, notes?: string): Sound
     full.includes('玩水') ||
     full.includes('溪') ||
     full.includes('瀑布') ||
-    full.includes('夢幻湖')
+    full.includes('夢幻湖') ||
+    full.includes('神仙谷') ||
+    full.includes('忘憂森林')
   ) {
     return SOUNDSCAPE_CONFIGS.river_stream;
   }
@@ -106,6 +108,9 @@ export function getSoundscapeMeta(attractionName: string, notes?: string): Sound
     full.includes('晚餐') ||
     full.includes('夜市') ||
     full.includes('東大門') ||
+    full.includes('逢甲夜市') ||
+    full.includes('南庄老街') ||
+    full.includes('老街') ||
     full.includes('早餐') ||
     full.includes('蘇澳服務區') ||
     full.includes('美食') ||
@@ -119,7 +124,9 @@ export function getSoundscapeMeta(attractionName: string, notes?: string): Sound
     full.includes('稻浪') ||
     full.includes('伯朗大道') ||
     full.includes('稻田') ||
-    full.includes('農路')
+    full.includes('農路') ||
+    full.includes('竹林') ||
+    full.includes('孟宗竹')
   ) {
     return SOUNDSCAPE_CONFIGS.field_wind;
   }
@@ -140,7 +147,10 @@ export function getSoundscapeMeta(attractionName: string, notes?: string): Sound
     full.includes('文創') ||
     full.includes('文化創意') ||
     full.includes('檜木') ||
-    full.includes('古蹟')
+    full.includes('古蹟') ||
+    full.includes('妖怪村') ||
+    full.includes('紫南宮') ||
+    full.includes('格林')
   ) {
     return SOUNDSCAPE_CONFIGS.shrine_zen;
   }
@@ -160,6 +170,8 @@ export function getSoundscapeMeta(attractionName: string, notes?: string): Sound
 
   if (
     full.includes('飯店') ||
+    full.includes('商旅') ||
+    full.includes('雀客') ||
     full.includes('入住') ||
     full.includes('退房') ||
     full.includes('賦歸') ||
