@@ -95,8 +95,7 @@ export const ItineraryList: React.FC<ItineraryListProps> = ({
             onChange={(e) => onSelectDemoPlan(e.target.value)}
             className="text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 outline-none cursor-pointer"
           >
-            <option value="yilan-hualien">🇹🇼 國慶宜花黃金稻浪戲水二日遊</option>
-            <option value="guangfu-miaoli-nantou">🇹🇼 光復節苗中投忘憂森林二日遊</option>
+            <option value="guangfu-miaoli-nantou">🇹🇼 光復節苗栗南庄・台中逢甲・南投忘憂森林二日遊</option>
             <option value="custom">✍️ 我的自訂行程</option>
           </select>
 

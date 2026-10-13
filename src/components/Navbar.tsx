@@ -41,7 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-500 hidden sm:block truncate max-w-sm">
-                國慶連假宜蘭三奇黃金稻浪・花蓮砂婆噹溪・白鮑溪戲水二日遊
+                光復節連假南庄老街美食.格林奇幻森林攝影基地.逢甲夜市.忘憂森林二日遊
               </p>
             </div>
           </div>

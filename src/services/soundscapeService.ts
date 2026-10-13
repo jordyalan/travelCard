@@ -73,7 +73,7 @@ export const SOUNDSCAPE_CONFIGS: Record<SoundscapeType, SoundscapeMeta> = {
     type: 'departure_travel',
     title: '晨光出發旅程輕快律動',
     badge: '活力出發與期待旋律',
-    description: '國慶連假整裝出發的晨光朝氣、同行夥伴歡喜期待的輕快旅途音律',
+    description: '光復節連假整裝出發的晨光朝氣、同行夥伴歡喜期待的輕快旅途音律',
     emoji: '🎒',
   },
 };

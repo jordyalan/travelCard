@@ -35,13 +35,17 @@ import { AttractionModal } from './components/AttractionModal';
 import { AddItineraryModal } from './components/AddItineraryModal';
 import { SmartImportModal } from './components/SmartImportModal';
 
-const STORAGE_KEY_ITEMS = 'travelmate_itinerary_items_v3';
-const STORAGE_KEY_PLAN = 'travelmate_selected_plan_v3';
+const STORAGE_KEY_ITEMS = 'travelmate_itinerary_items_v4';
+const STORAGE_KEY_PLAN = 'travelmate_selected_plan_v4';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'journey' | 'itinerary' | 'weather' | 'map'>('journey');
   const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
-    return localStorage.getItem(STORAGE_KEY_PLAN) || 'yilan-hualien';
+    const savedPlan = localStorage.getItem(STORAGE_KEY_PLAN);
+    if (savedPlan && savedPlan !== 'yilan-hualien') {
+      return savedPlan;
+    }
+    return 'guangfu-miaoli-nantou';
   });
 
   const [items, setItems] = useState<ItineraryItem[]>(() => {
@@ -49,8 +53,11 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // If already saved with Yilan/Hualien items or custom, keep them
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0 &&
+          !parsed.some((i: ItineraryItem) => i.id?.startsWith('yh-') || i.title?.includes('砂婆噹'))
+        ) {
           return parsed;
         }
       } catch (e) {
@@ -58,7 +65,7 @@ export default function App() {
       }
     }
     const freshPlans = getCuratedDemoPlans();
-    const defaultPlan = freshPlans.find((p) => p.id === 'yilan-hualien') || freshPlans[0];
+    const defaultPlan = freshPlans.find((p) => p.id === 'guangfu-miaoli-nantou') || freshPlans[0];
     return defaultPlan.items;
   });
 
@@ -66,9 +73,9 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = getTodayDateString();
     const freshPlans = getCuratedDemoPlans();
-    const defaultPlan = freshPlans.find((p) => p.id === 'yilan-hualien') || freshPlans[0];
+    const defaultPlan = freshPlans.find((p) => p.id === 'guangfu-miaoli-nantou') || freshPlans[0];
     const hasToday = defaultPlan.items.some((i) => i.date === today);
-    return hasToday ? today : (defaultPlan.initialDate || today);
+    return hasToday ? today : (defaultPlan.initialDate || '2026-10-25');
   });
 
   // User location state
